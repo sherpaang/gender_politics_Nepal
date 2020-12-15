@@ -1,0 +1,57 @@
+---
+title: "exploration"
+author: "Ang Sonam Sherpa"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+
+```{r}
+
+# To see if party can be a viable variable, I tried looking for a way to
+# conver their Nepali name into English, but it turned out to be not enough.
+
+# visualizing parties and number of candidates from each in a descending order
+
+cand2013 %>%
+  group_by(party_name) %>%
+  summarize(number = length(party_name), .groups = 'drop') %>%
+  arrange(desc(number))
+
+# I initially looked for a general idea of the number of candidates running
+# from each party. I then chose the top 10, and I renamed them in English. I
+# labeled the remaining parties as others. There were 20 entries with a party
+# named after a district, i.e., Lamjung. After making sure that no such party
+# exists, I passed it as a typo and removed those 20 entries.
+
+# I also renamed the biggest category - the independents - in English.
+
+cand2013 %>%
+  filter(!party_name == "Lamjung") %>%
+  mutate(party_name = case_when(
+    party_name == "स्वतन्त्र" ~ "Independent",
+    party_name == "एकीकृत नेपाल कम्युनिष्ट पार्टी (माओवादी)" ~ "CPN-Maoist",
+    party_name == "नेपाल कम्यूनिष्ट पार्टी (ए. मा. ले)" ~ "CPN-UML",
+    party_name == "नेपाली काँग्रेस" ~ "Nepali Congress",
+    party_name == "राष्ट्रिय प्रजातन्त्र पार्टी नेपाल" ~ "RPP Nepal",
+    party_name == "राष्ट्रिय प्रजातन्त्र पार्टी" ~ "RPP",
+    party_name == "सङ्घीय समाजवादी पार्टी, नेपाल" ~ "Socialist Party Nepal",
+    party_name == "नेपाल परिवार दल" ~ "Nepal Family Party",
+    party_name == "मधेशी जनअधिकार फोरम, नेपाल(लोकतान्त्रिक)" ~ "Madhesi People's Right's Forum",
+    party_name == "नेपाल कम्युनिष्ट पार्टी (मार्क्सवादी–लेनिनवादी)" ~ "CPN (Marxist-Leninist)",
+    TRUE ~ "Others"
+  ))
+
+# But this turned out to be a waste of time. Even though there are big parties,
+# small parties still have candidates running even if they barely win.
+# This simply overwhelms the number of smaller parties in the model and makes
+# any analysis difficult. Without a way to convert th
+
+```

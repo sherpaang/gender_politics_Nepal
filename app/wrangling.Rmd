@@ -1,0 +1,315 @@
+---
+title: "wrangling"
+author: "Ang Sonam Sherpa"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+
+```{r, Open Data Nepal Project}
+
+
+cand2013 <- read_csv("raw_data/cand2013.csv",
+                     col_types = 
+                       cols(District = col_character(),
+                            Zone = col_factor(),
+                            `Geographical Region` = col_factor(),
+                            `Development Region` = col_factor(),
+                            Constituency = col_double(),
+                            CandidateName = col_character(),
+                            Gender = col_character(),
+                            Age = col_double(),
+                            PartyName = col_factor()
+                            )) %>%
+  clean_names() %>%
+
+# The major problem with this data set was its inconsistent use of Nepali and
+# English. I initially extracted for the gender column in R, and then I copied
+# the Nepali terms to selectively exchange the respective genders in the data
+# set with the case when function.
+  
+  mutate(gender = case_when(gender == "म" ~ "female",
+                            TRUE ~ "male")) %>%
+                        
+# I then got rid of the candidate's name because they were irrelevant to my
+# analysis.
+
+  select(!candidate_name)
+
+
+# I am reading all the data sets into R, and using clean names function from 
+# the janitor package to clean their column names. I only selected district and
+# gender because I did not need anything else.
+
+results2008 <- read_csv("raw_data/results2008.csv",
+                        col_types = cols(
+  District = col_character(),
+  Zone = col_character(),
+  `Geographical Region` = col_character(),
+  `Development Region` = col_character(),
+  S.no = col_double(),
+  Const = col_double(),
+  `Candidate Name` = col_character(),
+  `Party Name` = col_character(),
+  Gender = col_character(),
+  `Total Votes` = col_double(),
+  Remark = col_character())) %>%
+  clean_names() %>%
+  select(district, gender)
+
+# reading in the dropout data set of school dropout rates in 2011-12
+
+dropout <- read.csv("raw_data/dropout_rates_2011-012.csv") %>%
+  clean_names()
+
+```
+
+
+```{r, Nepal in Data}
+
+
+# I renamed all the columns with apt names and selected the 2011 columns only
+# since I only needed them for my analyses.
+
+# I have not converted the columns into numeric yet, because I have done so
+# after I merged them. No particular reason, simply for convenience.
+
+femaleliteracy <- read_csv("raw_data/femaleliteracy.csv",
+                           col_types = cols(
+  District = col_character(),
+  `2001` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(femaleliteracy2011 = x2011) %>%
+  select(femaleliteracy2011, district)
+  
+femalepop <- read_csv("raw_data/femalepop.csv",
+                      col_types = cols(
+  District = col_character(),
+  `2001` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(femalepop2011 = x2011) %>%
+  select(femalepop2011, district)
+
+hdi2011 <- read_csv("raw_data/hdi2011.csv",
+                    col_types = cols(
+  District = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(hdi2011 = x2011)
+
+literacy <- read_csv("raw_data/literacy.csv",
+                     col_types = cols(
+  District = col_character(),
+  `2001` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(literacy2011 = x2011) %>%
+  select(literacy2011, district)
+
+popdensity <- read_csv("raw_data/popdensity.csv",
+                       col_types = cols(
+  District = col_character(),
+  `2001` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(popdens2011 = x2011) %>%
+  select(popdens2011, district)
+
+povline <- read_csv("raw_data/povlineprop.csv",
+                    col_types = cols(
+  District = col_character(),
+  `2004` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(povline2011 = x2011) %>%
+  select(povline2011, district)
+
+totalpop <- read_csv("raw_data/totalpop.csv",
+                     col_types = cols(
+  District = col_character(),
+  `2001` = col_character(),
+  `2011` = col_character())) %>%
+  clean_names() %>%
+  rename(pop2011 = x2011) %>%
+  select(pop2011, district)
+
+administrativejobs <- read_csv("raw_data/womenadministrativejob.csv",
+                               col_types = cols(
+  District = col_character(),
+  `2001` = col_character())) %>%
+  clean_names() %>%
+  rename(adminjobs2001 = x2001)
+
+professionaljobs <- read_csv("raw_data/womenprofessionaljob.csv",
+                             col_types = cols(
+  District = col_character(),
+  `2001` = col_character())) %>%
+  clean_names() %>%
+  rename(professionaljobs2001 = x2001)
+
+incomeshare <- read_csv("raw_data/womenincomeshare.csv",
+                        col_types = cols(
+  District = col_character(),
+  `2001` = col_character())) %>%
+  clean_names() %>%
+  rename(income2001 = x2001)
+
+# I received a lot of error while reading all these data in. I realized
+# after some looking aorund that it was a problem with the data set itself.
+# I decided to ignore the errors because it was simply a matter of two
+# districts not have all the information.
+
+```
+
+
+```{r, combining variable data sets}
+
+# I removed the districts in all these data sets, which I believe were a
+# a result of redistricting recently. All of them have na values, which most
+# likely means they simply did not exist when these data sets were collected
+# in 2001 and 2011.
+
+variables <- incomeshare %>%
+  full_join(professionaljobs, by = "district") %>%
+  full_join(administrativejobs, by = "district") %>%
+  full_join(totalpop, by = "district") %>%
+  full_join(povline, by = "district") %>%
+  full_join(popdensity, by = "district") %>%
+  full_join(literacy, by = "district") %>%
+  full_join(hdi2011, by = "district") %>%
+  full_join(femalepop, by = "district") %>%
+  full_join(femaleliteracy, by = "district") %>%
+  arrange(income2001) %>%
+  head(72) %>%
+  
+# I used head 72 to remove the four redistricting cases, and also all the
+# unnecessary data rows with previous variables.  
+  
+  mutate(pop2011 = as.numeric(pop2011),
+         povline2011 = as.numeric(povline2011),
+         popdens2011 = as.numeric(popdens2011),
+         literacy2011 = as.numeric(literacy2011),
+         hdi2011 = as.numeric(hdi2011),
+         femalepop2011 = as.numeric(femalepop2011),
+         femaleliteracy2011 = as.numeric(femaleliteracy2011),
+         professionaljobs2001 = as.numeric(professionaljobs2001),
+         adminjobs2001 = as.numeric(adminjobs2001),
+         income2001 = as.numeric(income2001))
+
+# I also used mutate to change the type of these columns into numeric as I
+# wanted them to be for the model.
+
+# I got an error here saying that NAs were introduced by coercion. That was
+# the case because "NA" were literaly written as characters in these cells
+# before, which made R act as suh.
+
+```
+
+
+```{r, combining all the data sets}
+
+# combining results of 2008 with the data set of candidates from 2013.
+
+# I initially used full_join, but it created a data set with 30000 rows. It
+# simply multiplied the number of districts in 2013 by the number of candidates
+# from each district. To avoid this, I changed the variable in the 2008 from
+# individual candidate to a district proportion of female winners.
+
+# created an object to store the proportion of women
+
+prop2008 <- results2008 %>%
+  group_by(district) %>%
+  mutate(gender = case_when(gender == "F" ~ 1,
+                            TRUE ~ 0)) %>%
+  summarize(winner2008 = sum(gender)/n(), .groups = "drop")
+
+# joined the object to cand2013 using full join so that I do not miss any data
+
+cand2013 <- cand2013 %>%
+  full_join(prop2008, by = "district") %>%
+  full_join(dropout, by = "district")
+
+# combining candidates data set with variables data set
+
+# Since the data sets of candidates and these variable data sets are from
+# different sources, I explored their differences before joining them together.
+# Lo and Behold, there were some districts that were not present in the
+# variables data set. It should be because of a problem with the source data.
+
+# To figure out the missing districts, I created objects with district names
+# from each data set.
+
+cand <- unique(cand2013$district)
+
+var <- unique(variables$district)
+
+# I then created an object with the difference using the %in% operator.
+
+difference <- tibble(district = cand[!(cand %in% var)])
+
+# Joined the candidate and the variables data set using full join to make sure
+# that I do not lose any important data points
+
+cand2013 <- cand2013 %>%
+  full_join(variables, by = "district")
+
+# Removed the districts in the difference tibble using anti join. I tried
+# filtering but it did not work out. Anti join gives us value from the first
+# data set that are not present in the second.
+
+cand2013 <- anti_join(cand2013, difference, by = "district")
+
+# Adding the proportion of female candidates in every district in 2013 and
+# joining it to the original data set using full join.
+
+prop2013 <- cand2013 %>%
+  group_by(district) %>%
+  mutate(gender = case_when(gender == "female" ~ 1,
+                            TRUE ~ 0)) %>%
+  summarize(prop2013 = sum(gender)/n(), .groups = "drop")
+
+cand2013 <- cand2013 %>%
+  full_join(prop2013, by = "district") %>%
+  drop_na()
+
+# I noticed after plotting some graphs that there were some gender values
+# unavailable for some candidates. I removed these na values for proper
+# modeling and graphing.
+
+```
+
+
+```{r, aggreagate data set}
+
+# Creating an aggregate data set consisting of only district characteristics
+# and district proportions of women candidates from 2013 and women winners
+# from 2008
+
+aggregate <- cand2013 %>%
+  select(- c(age, party_name, gender, constituency)) %>%
+  unique()
+
+```
+
+
+```{r, writing csv files}
+
+# writing csv files for easy access and faster loading in the main app
+
+write.csv(cand2013, "cand2013")
+write.csv(aggregate, "aggregate")
+
+```
+
+
+
+

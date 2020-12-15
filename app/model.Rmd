@@ -1,0 +1,125 @@
+---
+title: "model"
+author: "Ang Sonam Sherpa"
+date: "12/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(rstanarm)
+library(tidymodels)
+```
+
+
+```{r}
+
+# creating a function to test different models
+set.seed(10)
+
+cand2013_split <- initial_split(cand2013, prob = 0.8)
+cand2013_train <- training(cand2013_split)
+cand2013_test <- testing(cand2013_split)
+
+estimate_error <- function(test_recipe){
+    
+    # creating the model with linear regression  
+    
+    cand2013_model <-
+        linear_reg() %>%
+        set_engine("lm")
+    
+    # creating work flow by adding model and recipe
+    
+    cand2013_workflow <- workflow() %>%
+        add_model(cand2013_model) %>%
+        add_recipe(test_recipe)
+    
+    # I used the train set to fit the model and the test set to predict, after
+    # which I used bind_cols to add in the actual data and the predicted data
+    # into a single tibble.
+    
+    prediction_results <- cand2013_workflow %>%
+        fit(data = cand2013_train) %>%
+        predict(new_data = cand2013_test) %>%
+        bind_cols(cand2013_test %>% select(prop2013))
+    
+    # I used the metrics function to calculate the errors. I decided to use rsq and
+    # rmse for testing the accuracy of the models, simply because I thought they
+    # were sufficient for this purpose.
+    
+    prediction_results %>%
+        metrics(truth = prop2013, estimate = .pred)
+}
+# Testing various recipes and their error value. I firstly put in every
+# explanatory variable I had. After seeing the intercepts of the variables
+# in stan glm, I then chose two more models: one with all the zero values and
+# the other with all the non-zero values.
+
+recipe1 <- 
+    recipe(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
+               adminjobs2001 + pop2011 + povline2011 + popdens2011 +
+               hdi2011 + literacy2011 + femalepop2011 + femaleliteracy2011,
+           data = cand2013_train)
+
+error1 <- estimate_error(recipe1)
+
+recipe2 <- recipe(prop2013 ~ winner2008 + income2001 + hdi2011 + literacy2011
+                  + femaleliteracy2011,
+                 data = cand2013_train)
+
+error2 <- estimate_error(recipe2)
+
+recipe3 <- recipe(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
+                     povline2011 + popdens2011 + literacy2011 + femalepop2011 +
+                     femaleliteracy2011,
+                 data = cand2013_train)
+
+error3 <- estimate_error(recipe3)
+
+# finally putting all the error values in the same tibble
+
+error <- tibble(Metric = c("RMSE", "RSQ", "MAE"),
+                "All Variables" = error1$.estimate,
+                "Non-zero Variables" = error2$.estimate,
+                "Zero variables" = error3$.estimate)
+
+# To demonstrate the model and its intercepts in the shinyapp
+
+set.seed(10)
+
+model1 <- stan_glm(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
+                       adminjobs2001 + pop2011 + povline2011 + popdens2011 +
+                       hdi2011 + literacy2011 + femalepop2011 +
+                       femaleliteracy2011 + grade_8 + grade_10 - 1,
+                   refresh = 0,
+                   data = cand2013)
+
+set.seed(10)
+
+model2 <- stan_glm(prop2013 ~ winner2008 + income2001 + hdi2011 +
+                       literacy2011 + femaleliteracy2011 - 1,
+                   refresh = 0,
+                   data = cand2013)
+
+set.seed(10)
+
+model3 <- stan_glm(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
+                       povline2011 + popdens2011 + femalepop2011 + grade_8 + 
+                     grade_10 - 1,
+                   refresh = 0,
+                   data = cand2013)
+
+```
+
+
+```{r}
+
+# saving the models in a separate file to save time while loading
+
+write.csv(error, "error")
+saveRDS(model2, "model2")
+saveRDS(model3, "model3")
+
+```
