@@ -1,0 +1,12 @@
+name: gender_politics_Nepal
+title: gender_politics_Nepal
+username:
+account: angsonam
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3402086
+bundleId: 3990407
+url: https://angsonam.shinyapps.io/gender_politics_Nepal/
+when: 1608005382.98001
+asMultiple: FALSE
+asStatic: FALSE
