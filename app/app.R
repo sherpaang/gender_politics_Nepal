@@ -19,7 +19,7 @@ model3 <- readRDS("model3")
 # UI
 
 ui <- fluidPage(
-    fluidPage(theme = shinytheme("flatly"),
+    fluidPage(theme = shinytheme("yeti"),
               titlePanel("Determinants of Woman Representativeness in Nepal"),
               mainPanel(
                   tabsetPanel(
