@@ -26,8 +26,7 @@ ui <- fluidPage(
                       tabPanel(
                           "Nepal",
                           br(),
-                          leafletOutput("basicmap"),
-                          br(),
+                          h4("About Nepal"),
                           p("Nepal is a small country in South Asia, located
                           between India and China. It is home to 28 million
                           people and boasts some of the tallest mountains in
@@ -44,7 +43,30 @@ ui <- fluidPage(
                           implemented in 2017. This study is based in the
                           election of 2013, when the country did not have a
                           federal governance system and consisted of 75
-                          districts overall.")
+                          districts overall."),
+                          leafletOutput("basicmap"),
+                          h4("HDI by geograhpical region"),
+                          sidebarLayout(
+                              sidebarPanel(
+                                  selectInput(
+                                      "select_region",
+                                      "Select Region",
+                                      choices = c("Mountain", "Hill", "Terai")
+                                  )),
+                              mainPanel(plotOutput("hdi"))),
+                          br(),
+                          br(),
+                          h4("Female literacy and population"),
+                          sidebarLayout(
+                              sidebarPanel(
+                                  selectInput(
+                                      "select_dr",
+                                      "Select Development Region",
+                                      choices = c("Eastern", "Central",
+                                                  "Western",
+                                                  "Mid-Western", "Far-Western")
+                                  )),
+                              mainPanel(plotOutput("femlitpop")))
                       ),
                       
                       tabPanel(
@@ -92,8 +114,7 @@ ui <- fluidPage(
                           had a total of 68 districts with variuos candidates
                           from each."),
                           br(),
-                          h2("Female Representation in Nepal"),
-                          h4("Exploratory Data Analysis"),
+                          h4("Female Representation in Nepal"),
                           h5("Distribution of Gender across district"),
                           plotOutput("density"),
                           br(),
@@ -103,6 +124,8 @@ ui <- fluidPage(
                           p("The data sets used in this project were largely
                        extracted from three major sources:"),
                           tags$ul(
+                              tags$li(a("World Bank",
+                                href="https://databank.worldbank.org/home")),
                               tags$li(a("Open Data Nepal Project",
                                         href="http://data.opennepal.net/")),
                               tags$li(a("Nepal In Data",
@@ -141,14 +164,12 @@ ui <- fluidPage(
                                    \\beta_{4}literacy2011_i +
                                    \\beta_5femaleliteracy2011_i +
                                    \\epsilon_i $$"),
-                          p("Here are the intercepts I got for both of my
-                            models:"),
+                          p("Here are the intercepts I got for my models:"),
                           br(),
                           h4("Model with non-zero coefficient variables"),
                           gt_output(outputId = "nonzerotable"),
                           br(),
-                          h4("Model with zero coefficient variables"),
-                          gt_output(outputId = "zerotable"),
+                          plotOutput("hdicorr"),
                           br(),
                           h3("Interpretation"),
                           h4("Terminologies:"),
@@ -239,6 +260,47 @@ ui <- fluidPage(
 
 server <- function(input, output){
     
+    output$hdi <- renderPlot({
+        
+        hdigraph %>%
+            filter(geographical_region == input$select_region) %>%
+            ggplot(aes(x = development_region,
+                       y = averageHDI)) +
+            geom_boxplot() +
+            theme_classic() +
+            scale_y_continuous(limits = c(0.4, 0.65)) +
+            labs(title = "Average HDI across development regions",
+                 x = "Development Regions",
+                 y = "Average HDI")
+        
+    }
+    )
+    
+    output$femlitpop <- renderPlot({
+        
+        # Plotting a geom col and geom line at the same graph with different y axes
+        
+        femliteracypop %>%
+            filter(development_region == input$select_dr) %>%
+            ggplot(aes(x = geographical_region)) +
+            geom_col(aes(y = totalfempop), size = 1, color = "white",
+                     fill = "darkblue") +
+            geom_line(aes(y = 20000*avgfemliteracy), size = 1.25, color = "red",
+                      group = 1) +
+            scale_y_continuous(
+                sec.axis = sec_axis(~./20000, name = "Female literacy",
+                                    breaks = c(10, 20, 30, 40, 50, 60, 70)),
+                labels = scales::comma,
+                breaks = c(0, 250000, 500000, 750000, 1000000,
+                           1250000, 1500000, 1750000, 2000000, 2250000)) +
+            theme_classic() +
+            labs(title = "Total population and Average female literacy",
+                 subtitle = "Female literacy is generally lowest in Terai",
+                 x = "Geographical Region",
+                 y = "Total female population")
+        
+    })
+    
     output$basicmap <- renderLeaflet({
         leaflet() %>%
             setView(lng = 84.1240, lat = 28.3949, zoom = 6) %>%
@@ -278,24 +340,20 @@ server <- function(input, output){
             tab_source_note("Source: Open Project Nepal & Nepal in Data")
         
     })
-    
-    output$zerotable <- render_gt({
-        
-        tbl_regression(model3, intercept = TRUE) %>%
-            as_gt() %>%
-            tab_header(title = md("Regression of proportion of Female
-                                  candidates in a district with various
-                                  district characteristics")) %>%
-            tab_source_note("Source: Open Project Nepal & Nepal in Data")
-        
-    })
-    
-    
+
     output$error <- render_gt({
         
         error
         
     })
+    
+    output$hdicorr <- renderPlot({
+        
+      hdicorr
+        
+    })
+    
+    
 }
 
 # Run the application
