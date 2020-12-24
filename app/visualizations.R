@@ -3,6 +3,7 @@
 cand2013 <- read.csv("cand2013")
 aggregate <- read.csv("aggregate")
 enrollmentgdp <- read.csv("enrollmentgdp")
+asialiteracy <- read.csv("asialiteracy")
 
 # visualizing gender distribution of candidates across geographical regions
 # Assigning the plot to an object to call it later in the main app.
@@ -126,6 +127,7 @@ saarcliteracy <- asialiteracy %>%
 
 educationspendingcorr <- enrollmentgdp %>%
     select(country_name, year, enrollmentdifference, educationspending) %>%
+    filter(country_name != "South Asia (IDA & IBRD)") %>%
     na.omit() %>%
     mutate(educationspending = as.numeric(educationspending)) %>%
     ggplot(aes(educationspending, enrollmentdifference)) +
@@ -135,23 +137,23 @@ educationspendingcorr <- enrollmentgdp %>%
     scale_x_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8),
                        labels = function(x) paste0(x, '%')) +
     scale_y_continuous(labels = function(x) paste0(x, '%')) +
-    labs(title = "Correlation between GDP spending in education and the gender
-              difference in primary school enrollment",
+    labs(title = "Education spending and Primary school enrollment",
          x = "GDP spending in education",
          y = "Gender difference in primary enrollment")
 
 gdpcorr <- enrollmentgdp %>%
     select(country_name, year, enrollmentdifference, datapercapita) %>%
+    filter(country_name != "South Asia (IDA & IBRD)") %>%
     na.omit() %>%
     mutate(datapercapita = as.numeric(datapercapita)) %>%
     ggplot(aes(datapercapita, enrollmentdifference)) +
     geom_point() +
     geom_smooth(method = "loess") +
     theme_clean() +
-    scale_x_continuous(breaks = c(0, 1000, 2000, 3000, 4000,
+    scale_x_continuous(labels=scales::dollar_format(),
+                       breaks = c(0, 1000, 2000, 3000, 4000,
                                   5000, 6000, 7000, 8000)) +
     scale_y_continuous(labels = function(x) paste0(x, '%')) +
-    labs(title = "GDP per capita and gender difference in primary school 
-       enrollment",
+    labs(title = "GDP and Primary school enrollment",
          x = "GDP per capita",
          y = "Gender difference in primary enrollment")

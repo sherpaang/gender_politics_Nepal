@@ -12,9 +12,7 @@ library(gtsummary)
 library(broom.mixed)
 
 source("visualizations.R")
-error <- read.csv("error")
 model2 <- readRDS("model2")
-model3 <- readRDS("model3")
 
 # UI
 
@@ -53,6 +51,39 @@ ui <- fluidPage(
                           br(),
                           br(),
                           br(),
+                          h4(strong("More on South Asia")),
+                          p("As we have seen in the graphs above, South Asia
+                            generally has not done very well for female
+                            empowerment. One of the best indicators of gender
+                            empowerment in a society is the difference in
+                            primary school enrollment between boys and girls.
+                            Ofcourse, there are other factors which then
+                            affects gender empowerment, but primary school
+                            enrollment often times is a powerful indicator of
+                            gender empowerment. The following two plots
+                            illustrate how the gendered difference in primary
+                            school enrollment has correlated with various
+                            factors over the years in South Asia. They are
+                            created using datasets from as far as 1960
+                            exclusively for countries belonging to South Asia"),
+                          br(),
+                          plotOutput("educationcorr"),
+                          br(),
+                          p("The relationship is clear. More spending in
+                            Education clearly leads to a lower gender
+                            difference in Primary school enrollment. The effect
+                            wanes down after the GDP spending on education
+                            reaches 4% however."),
+                          plotOutput("gdpcorrelation"),
+                          br(),
+                          p("There seems to be a very strong correlation
+                            between a higher GDP per capita and a lower
+                            gendered difference in Primary school enrollment.
+                            However, after the GDP per capita reaches around 
+                            $2000, the effect does not seem to exist for South
+                            Asian countries"),
+                          br(),
+                          h4(strong("Inside Nepal")),
                           p("It is home to a hundred different castes,
                             ethnicities and languages despite its rather small
                             population. The capital city is located in the 
@@ -66,7 +97,6 @@ ui <- fluidPage(
                           election of 2013, when the country did not have a
                           federal governance system and consisted of 75
                           districts overall."),
-                          br(),
                           h4(strong("Map of Nepal")),
                           leafletOutput("basicmap"),
                           br(),
@@ -111,9 +141,28 @@ ui <- fluidPage(
                           h4(strong("Female Representation in Nepal")),
                           plotOutput("density"),
                           br(),
+                          p("As we can see, the proportion of female candidates
+                            in 2013 and the proportion of female winners in
+                            2008 both fall disproportionately around 0-10% in
+                            most districts. Districts with no women winners
+                            occur in the highest frequency whereas districts
+                            with 10% of female candidates occur most
+                            frequently."),
+                          br(),
                           plotOutput("age"),
-                          br(),                          
+                          br(),           
+                          p("The distribution of age across geographical region
+                            and gender seems to be pretty evenly spread. There
+                            is a high concentration in the 30-50 age mark. The
+                            number of candidates in Terai is significantly more
+                            in comparison"),
+                          br(),
                           plotOutput("geo"),
+                          br(),
+                          p("Finally, the proportion of female candidates
+                            across geographical regions is pretty similar. The
+                            number of female candidates from the Mountain region
+                            seems to be negligible - which is problematic."),
                           br(),
                           h4(strong("Important Data Modifications")),
                           p("Most of the modifications have been aptly
@@ -134,7 +183,7 @@ ui <- fluidPage(
                           had a total of 68 districts with variuos candidates
                           from each."),
                           br(),
-                          h4("Source:"),
+                          h4(strong("Source:")),
                           p("The data sets used in this project were largely
                        extracted from three major sources:"),
                           tags$ul(
@@ -144,11 +193,13 @@ ui <- fluidPage(
                                         href="http://data.opennepal.net/")),
                               tags$li(a("Nepal In Data",
                                         href="https://nepalindata.com/"))
-                          )
+                          ),
+                          br(),
+                          br()
                       ),
                     tabPanel(
                           "Model",
-                          h3("Different Models"),
+                          h4(strong("Regression")),
                           p("I initially divided the data set into training and
                             testing. After fitting the model into the training
                             data set, I checked their predictive power with the
@@ -161,28 +212,34 @@ ui <- fluidPage(
                             and the non-zero coefficients in two different
                             models. I tested the errors associated with all
                             three models."),
-                          p("The following is the list of models I considered
-                          and the errors associated with each of the models."),
-                          tableOutput("error"),
-                          br(),
-                          h3("Model"),
-                          p("None of the models above have any significant
-                          error values, so I proceeded with making two models,
-                            one with all the zero coefficient variables and the
-                            other with non-zero coefficient variables."),
-                          p("The Mathematical formula for the model with
-                          non-zero coefficient variables is as follows:"),
+                          p("None of the models had any significant
+                          error values, so I proceeded with making a model
+                            with all the non-zero coefficient variables."),
+                          h4(strong("Formula")),
                           withMathJax(),
                           helpText("$$ femaleprop_i = \\beta_1winner2008_i +
                                    \\beta_{2}income2001_i + \\beta_3hdi2011_i +
                                    \\beta_{4}literacy2011_i +
                                    \\beta_5femaleliteracy2011_i +
                                    \\epsilon_i $$"),
+                          br(),
                           p("Here are the intercepts I got for my models:"),
                           gt_output(outputId = "nonzerotable"),
                           br(),
+                          p("As we can see, HDI of a district seems to have an
+                            outsized influence in the proportion of female
+                            candidates in a district. To better visualize the
+                            relationship between the HDI and proportion of
+                            female candidates, the following correlation plot
+                            should help."),
                           plotOutput("hdicorr"),
                           br(),
+                          p("For a better understanding of how HDI is
+                            distributed across Nepal, the following interactive
+                            plot should help. Selecting a geographical region
+                            in the left hand side should demonstrate the
+                            distribution of HDI across development regions in
+                            the right."),
                           h5("HDI by geograhpical region"),
                           sidebarLayout(
                             sidebarPanel(
@@ -192,8 +249,7 @@ ui <- fluidPage(
                                 choices = c("Mountain", "Hill", "Terai")
                               )),
                             mainPanel(plotOutput("hdi"))),
-                          h3("Interpretation"),
-                          h4("Terminologies:"),
+                          h4(strong("Terminologies")),
                           tags$ul(
                               tags$li("Our outcome variable (y variable) is
                               femaleprop, which refers to the proportion of
@@ -212,21 +268,27 @@ ui <- fluidPage(
                                       actual regression coefficient falling
                                       under these intervals.")
                           ),
-                          h4("Explanation of Beta Coefficients:"),
-                          tags$ul(
-                              tags$li("All the variables in model with zero
-                              coefficient variables seemt to have very little
-                                      or non-existent correlation with the
-                                      proportion of female candidates in the
-                                      district."),
-                              tags$li("In the model with non-zero coefficient
+                          h4(strong("Interpretation of the Model")),
+                          p("It is rather strange that so many
+                              variables in the model had near-zero coefficients.
+                              The statistical interpretation of these
+                              coefficients would suggest that there is no
+                              relationship between female candidate proportion
+                              and these variables. That is a possibility since
+                              proportion of female candidates might not be a
+                              good proxy for gender empowerment. The fact that
+                              there were only 68 districts ultimately (removing
+                              na values and other data problems) could have also
+                              meant that the data set might not have been big
+                              enough for analysis"),
+                          p("In the model with non-zero coefficient
                               variables however, the Beta of winner2008, which
                               is 0.12, refers to the slope of proportion of
                               female candidates in 2013 with the proportion of
                               women elected officials in the district in 2008.
                               The confidence interval is also relatively narrow
                               for this variable."),
-                              tags$li("The coefficients of income 2001 and
+                          p("The coefficients of income 2001 and
                               literacy 2011 are negative. This implies a
                               negative relationship between a higher income of
                               woman (income 2001) and higher general literacy
@@ -236,7 +298,7 @@ ui <- fluidPage(
                               null hypothesis either. Ergo, both of these
                               variables ought to be read as having zero
                               correlations at this point."),
-                              tags$li("The highest coefficient among our
+                          p("The highest coefficient among our
                               variables seems to be for
                   hdi 2011. The correlation between HDI and female empowerment
                   is pretty self-explanatory. When people in a community are
@@ -249,26 +311,49 @@ ui <- fluidPage(
                   but rather other variables which might aid a higher HDI.
                   Note: the income variable we have belongs to 2001, so we
                   cannot take that as an effective proxy for the income levels
-                  of women in these districts in  2013.")
-                          )
+                  of women in these districts in  2013."),
+                          br(),
+                          br()
                       ),
                       tabPanel("About",
                                br(),
                                h4("About Me"),
                                p("Hey there, my name is Ang Sonam Sherpa. I am
-                               a sophomore at
-                 Harvard concentrating in Social Studies and Mathematics.
-                 Welcome to my final project for Gov 50, a class in data
-                 science I took for the fall semester in 2020."),
+                               a sophomore at Harvard concentrating in Social
+                               Studies with a secondary in Mathematics. Welcome
+                               to my final project for Gov 50, a class in data
+                               science. I took it for the fall semester in 2020.
+                               If you are here, I am presuming you went through
+                               my project already. Let me know your thoughts at
+                               angsonamsherpa@college.harvard.edu"),
                                h4("About the project"),
                                p("This project is an attempt at understanding
-                               how female
-                 representation in Nepal is affected by various district level
-                 characteristics ranging from  HDI to literacy. To do so, I
-                 extracted a data set consisting of candidates in the 2013
-                 election of Nepal and regressed the proportion of female
-                 candidates in each district with various district
-                 characteristics. "),
+                               how female representation in Nepal is affected by
+                               various district level characteristics ranging
+                               from  HDI to literacy. To do so, I extracted a
+                               data set consisting of candidates in the 2013 
+                               election of Nepal and regressed the proportion
+                               of female candidates in each district with
+                               various district characteristics. I got to learn
+                               a lot about Nepal doing so, and I am really glad
+                               in having chosen Nepal for my study"),
+                               h4("Motivations"),
+                               p("I am from Nepal. I feel deeply connected to
+                                 everything that happens there. As a
+                                 momo-loving Nepali, I used this opportunity
+                                 to learn more about my home country. The major
+                                 motivation for choosing Nepal was the
+                                 promulugation of the Affirmative Action policy
+                                 in 2006 which includes a mandatory 33%
+                                 representation of women in each party. I
+                                 wanted to explore the potential effects of the
+                                 policy in the 2013 elections. I could not find
+                                 sufficient data sets online about any other
+                                 elections. But I greatly appreciate the works
+                                 of Open Data Nepal Project and Nepal in Data - 
+                                 two of the foremost organizations at the
+                                 forefront of bringing Nepal to the digital age
+                                 that it belongs to"),
                                p("You can find the link to my Github right", 
                                  a("here.",
                 href="https://github.com/sherpaang/gender_politics_Nepal.git"))
@@ -313,6 +398,18 @@ server <- function(input, output){
         
     }
     )
+    
+    output$educationcorr <- renderPlot({
+      
+      educationspendingcorr
+      
+    })
+    
+    output$gdpcorrelation <- renderPlot({
+      
+      gdpcorr
+      
+    })
     
     output$femlitpop <- renderPlot({
         

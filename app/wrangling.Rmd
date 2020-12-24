@@ -568,6 +568,7 @@ enrollmentgdp %>%
 # saving enrollment gdp into a csv for easier loading in the app
 
 write.csv(enrollmentgdp, "enrollmentgdp")
+write.csv(asialiteracy, "asialiteracy")
 
 ```
 
