@@ -17,7 +17,7 @@ These csv files have been aptly placed in the main app folder as well, and
 they are called cand2013.csv and aggregate.csv.
 
 There are gifs I created to illustrate various plots which have been saved
-into www folder inside the app folder to load it later in the final shiny.
+into the app folder to load it later in the final shiny.
 
 ## Model
 
