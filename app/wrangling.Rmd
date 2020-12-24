@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(gganimate)
 ```
 
 
@@ -310,6 +311,187 @@ write.csv(aggregate, "aggregate")
 
 ```
 
+
+```{r}
+
+# world bank data about South Asia
+# selected the relevant columns only
+# used clean names from the janitor package
+
+worldbank <- read.csv(
+ "raw_data/a3bcc4fa-187c-4afe-a299-1961956028d5_Data.csv"
+ ) %>%
+  clean_names() %>%
+  select(series_name, country_name, x1960_yr1960,
+         x1961_yr1961, x1962_yr1962, x1963_yr1963, 
+         x1964_yr1964, x1965_yr1965, x1966_yr1966, 
+         x1967_yr1967, x1968_yr1968, x1969_yr1969,
+         x1970_yr1970, 
+         x1971_yr1971, x1972_yr1972, x1973_yr1973, 
+         x1974_yr1974, x1975_yr1975, x1976_yr1976, 
+         x1977_yr1977, x1978_yr1978, x1979_yr1979, 
+         x1980_yr1980, x1981_yr1981, x1982_yr1982, 
+         x1983_yr1983, x1984_yr1984, x1985_yr1985, 
+         x1986_yr1986, x1987_yr1987, x1988_yr1988, 
+         x1989_yr1989, x1990_yr1990, x1991_yr1991, 
+         x1992_yr1992, x1993_yr1993, x1994_yr1994, 
+         x1995_yr1995, x1996_yr1996, x1997_yr1997, 
+         x1998_yr1998, x1999_yr1999, x2000_yr2000, 
+         x2001_yr2001, x2002_yr2002, x2003_yr2003,
+         x2004_yr2004, x2005_yr2005, x2006_yr2006,
+         x2007_yr2007, x2008_yr2008, x2009_yr2009,
+         x2010_yr2010, x2011_yr2011, x2012_yr2012,
+         x2013_yr2013,
+         x2014_yr2014, x2015_yr2015, x2016_yr2016,
+         x2017_yr2017, x2018_yr2018, x2019_yr2019)
+
+
+# creating new objects with different data sets and combining the ones that
+# are similar to each other
+ 
+# Using pivot longer to pivot the data for better view of the data
+
+# mutating our year column to remove the na values. The values were not called
+
+# "NA" when they were missing. Instead, they had "..", so I had to replace it
+
+# with NA initially to later use na omit function
+
+asialiteracymale <- worldbank %>%
+  filter(series_name == 
+"Literacy rate, adult male (% of males ages 15 and above)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+asialiteracyfemale <- worldbank %>%
+  filter(series_name == 
+"Literacy rate, adult female (% of females ages 15 and above)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+# joining both male and female data sets into a single tibble, using full_join
+# to make sure I do not miss any missing data
+
+# used substring to extract the first five strings in year excluding the first
+# to convert it into a year value from the format I received the data in
+
+asialiteracy <- full_join(asialiteracymale, asialiteracyfemale,
+                          by = c("country_name", "year"),
+                          suffix = c("male", "female")) %>%
+  mutate(year = as.numeric(substr(.$year, 2, 5)))
+
+education <- worldbank %>%
+  filter(series_name == 
+"Government expenditure on education, total (% of GDP)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+gdppercapita <- worldbank %>%
+  filter(series_name == 
+"GDP per capita (constant 2010 US$)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+gdpgrowth <- worldbank %>%
+  filter(series_name == 
+"GDP growth (annual %)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+# combining gdp growth, gdp per capita and gdp spending on education into a
+# single tibble.
+# Used full_join twice because the suffix could not have three values.
+# Renamed the data column to education spending column for clarity
+# Changed the year column to a numeric format alongside changing it into years
+
+gdp <- full_join(gdppercapita, gdpgrowth,
+                 by = c("country_name", "year"),
+                 suffix = c("percapita", "growth")) %>%
+  full_join(education, by = c("country_name", "year")) %>%
+  rename("educationspending" = "data") %>%
+  mutate(year = as.numeric(substr(.$year, 2, 5)))
+
+enrollmentmale <- worldbank %>%
+  filter(series_name == 
+"Adjusted net enrollment rate, primary, male (% of primary school age children)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+enrollmentfemale <- worldbank %>%
+  filter(series_name == 
+"Adjusted net enrollment rate, primary, female (% of primary school age children)") %>%
+  select(!series_name) %>%
+  pivot_longer(!country_name, names_to = "year", values_to = "data") %>%
+  mutate(data = ifelse(data == "..",
+                       NA, data)) %>%
+  na.omit()
+
+primaryenrollment <- full_join(enrollmentmale, enrollmentfemale,
+                               by = c("country_name", "year"),
+                               suffix = c("male", "female")) %>%
+  mutate(year = as.numeric(substr(.$year, 2, 5)))
+
+
+```
+
+
+```{r}
+
+# saving the wrangled data sets into gif files for later extraction
+
+gdp %>%
+  ggplot(aes(datagrowth, educationspending, size = datapercapita,
+             color = country_name)) +
+  geom_point(alpha = 0.7) +
+  # scale_x_continuous(name = "GDP growth per year") +
+  # scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7)) +
+  transition_time(year)
+
+
+# Adding an animation for gdp per capita over the years. Not including Maldives
+# because it was too much of an outlier.
+
+pci <- gdp %>%
+  filter(country_name != "Maldives") %>%
+  mutate(datapercapita = as.numeric(datapercapita)) %>%
+  ggplot(aes(year, datapercapita, group = country_name,
+             color = factor(country_name))) +
+  geom_line() +
+  scale_color_manual(name = "Countries",
+                     values = c("blue", "red", "yellow","cyan",
+                                "purple", "green", "orange", "black")) +
+  theme_classic() +
+  theme(legend.position = "top") +
+  scale_y_continuous(breaks = c(0, 500, 1000, 1500, 2000, 2500, 3000,
+                                3500, 4000)) +
+  scale_x_continuous(breaks = c(1960, 1970, 1980, 1990, 2000, 2010, 2020)) +
+  transition_reveal(year) +
+  labs(title = "GDP per capita over the years",
+       subtitle = "Not including Maldives for being too much of an outlier",
+       x = "Year",
+       y = "GDP per capita")
+  
+anim_save("gdp.gif", animation = pci)
+
+```
 
 
 

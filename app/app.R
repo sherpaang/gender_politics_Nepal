@@ -216,8 +216,8 @@ ui <- fluidPage(
                                p("Hey there, my name is Ang Sonam Sherpa. I am
                                a sophomore at
                  Harvard concentrating in Social Studies and Mathematics.
-                 Welcome  to my final project for Gov 50, a class in data
-                 science."),
+                 Welcome to my final project for Gov 50, a class in data
+                 science I took for the fall semester in 2020."),
                                h4("About the project"),
                                p("This project is an attempt at understanding
                                how female
