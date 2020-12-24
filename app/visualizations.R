@@ -98,3 +98,22 @@ hdicorr <- aggregate %>%
          x = "HDI",
          y = "Proportion of female candidates")
 
+# changing the column types to the necessary type for the ggplot
+
+saarcliteracy <- asialiteracy %>%
+    pivot_longer(cols = c(datamale, datafemale),
+                 names_to = "gender",
+                 values_to = "literacy") %>%
+    mutate(literacy = as.numeric(literacy), gender = as.factor(gender),
+           country_name = as.factor(country_name)) %>%
+    ggplot(aes(year, literacy, group = gender, color = gender)) +
+    geom_line() +
+    facet_wrap(~ country_name) +
+    theme_bw() +
+    scale_color_manual(values = c("red", "blue"),
+                       breaks = c("datamale", "datafemale"),
+                       labels = c("Male", "Female")) +
+    labs(title = "Literacy rate for South Asian countries across gender",
+         subtitle = "Female literacy has always been much lower generally",
+         x = "Years",
+         y = "Literacy rate")

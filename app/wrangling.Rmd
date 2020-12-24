@@ -447,7 +447,14 @@ enrollmentfemale <- worldbank %>%
 primaryenrollment <- full_join(enrollmentmale, enrollmentfemale,
                                by = c("country_name", "year"),
                                suffix = c("male", "female")) %>%
-  mutate(year = as.numeric(substr(.$year, 2, 5)))
+  mutate(year = as.numeric(substr(.$year, 2, 5))) %>%
+  mutate(datamale = as.numeric(datamale),
+         datafemale = as.numeric(datafemale)) %>%
+  mutate(enrollmentdifference = datamale - datafemale) %>%
+  select(country_name, year, enrollmentdifference)
+
+# creating a new column including the enrollment difference between men and
+# women in primary education
 
 
 ```
@@ -457,24 +464,17 @@ primaryenrollment <- full_join(enrollmentmale, enrollmentfemale,
 
 # saving the wrangled data sets into gif files for later extraction
 
-gdp %>%
-  ggplot(aes(datagrowth, educationspending, size = datapercapita,
-             color = country_name)) +
-  geom_point(alpha = 0.7) +
-  # scale_x_continuous(name = "GDP growth per year") +
-  # scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7)) +
-  transition_time(year)
-
 
 # Adding an animation for gdp per capita over the years. Not including Maldives
 # because it was too much of an outlier.
 
-pci <- gdp %>%
+gdpgif <- gdp %>%
   filter(country_name != "Maldives") %>%
   mutate(datapercapita = as.numeric(datapercapita)) %>%
   ggplot(aes(year, datapercapita, group = country_name,
              color = factor(country_name))) +
   geom_line() +
+  geom_point() +
   scale_color_manual(name = "Countries",
                      values = c("blue", "red", "yellow","cyan",
                                 "purple", "green", "orange", "black")) +
@@ -489,9 +489,54 @@ pci <- gdp %>%
        x = "Year",
        y = "GDP per capita")
   
-anim_save("gdp.gif", animation = pci)
+anim_save("gdp.gif", animation = gdpgif)
+
+# changing the column types to the necessary type for the ggplot
+
+litgif <- asialiteracy %>%
+  pivot_longer(cols = c(datamale, datafemale),
+               names_to = "gender",
+               values_to = "literacy") %>%
+  mutate(literacy = as.numeric(literacy), gender = as.factor(gender),
+         country_name = as.factor(country_name)) %>%
+  ggplot(aes(year, literacy, group = gender, color = gender)) +
+  geom_line() +
+  geom_point(aes(group = seq_along(year))) +
+  facet_wrap(~ country_name) +
+  theme_bw() +
+  scale_color_manual(values = c("red", "blue"),
+                     breaks = c("datamale", "datafemale"),
+                     labels = c("Male", "Female")) +
+  labs(title = "Literacy rate for South Asian countries across gender",
+       subtitle = "Female literacy has always been much lower generally",
+       x = "Years",
+       y = "Literacy rate") +
+  transition_reveal(year)
+
+anim_save("literacy.gif", litgif)
 
 ```
 
+
+```{r}
+
+# correlations across South Asian countries along the years
+
+enrollmentgdp <- full_join(gdp, primaryenrollment,
+                           by = c("country_name", "year"))
+
+# correlation between gdp spending on education and the difference in primary
+# enrollment between men and women
+
+enrollmentgdp %>%
+  mutate(datagrowth = as.numeric(datagrowth),
+         educationspending = as.numeric(educationspending)) %>%
+  ggplot(aes(datagrowth, educationspending)) +
+  geom_jitter(alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8)) +
+  scale_x_continuous(breaks = c(-2, 0, 2, 4, 6, 8, 10))
+  
+```
 
 

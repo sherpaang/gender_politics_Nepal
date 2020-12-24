@@ -31,12 +31,20 @@ ui <- fluidPage(
                           between India and China. It is home to 28 million
                           people and boasts some of the tallest mountains in
                           the world."),
+                          br(),
+                          img(src = "literacy.gif", align = "left",
+                              height='250px', width='500px'),
+                          br(),
                           p("It is home to a hundred different castes,
                           ethnicities and languages despite its rather small
                           population. The capital city is located in the 
                           Kathmandu valley in the Hilly region of the country,
                           situated between the Mountaineous region in the north
                           and the Terai plains in the South."),
+                          br(),
+                          img(src = "gdp.gif", align = "left",
+                              height='250px',width='500px'),
+                          br(),
                           p("Administratively, it is divided into 7 states, 77
                           districts and thousands of local municipalities. It
                           has federal governance, which was very recently
