@@ -118,3 +118,40 @@ saarcliteracy <- asialiteracy %>%
          subtitle = "Female literacy has always been much lower generally",
          x = "Years",
          y = "Literacy rate")
+
+
+
+# correlation between gdp spending on education and the difference in primary
+# enrollment between men and women
+
+educationspendingcorr <- enrollmentgdp %>%
+    select(country_name, year, enrollmentdifference, educationspending) %>%
+    na.omit() %>%
+    mutate(educationspending = as.numeric(educationspending)) %>%
+    ggplot(aes(educationspending, enrollmentdifference)) +
+    geom_point() +
+    geom_smooth(method = "loess") +
+    theme_clean() +
+    scale_x_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8),
+                       labels = function(x) paste0(x, '%')) +
+    scale_y_continuous(labels = function(x) paste0(x, '%')) +
+    labs(title = "Correlation between GDP spending in education and the gender
+              difference in primary school enrollment",
+         x = "GDP spending in education",
+         y = "Gender difference in primary enrollment")
+
+gdpcorr <- enrollmentgdp %>%
+    select(country_name, year, enrollmentdifference, datapercapita) %>%
+    na.omit() %>%
+    mutate(datapercapita = as.numeric(datapercapita)) %>%
+    ggplot(aes(datapercapita, enrollmentdifference)) +
+    geom_point() +
+    geom_smooth(method = "loess") +
+    theme_clean() +
+    scale_x_continuous(breaks = c(0, 1000, 2000, 3000, 4000,
+                                  5000, 6000, 7000, 8000)) +
+    scale_y_continuous(labels = function(x) paste0(x, '%')) +
+    labs(title = "GDP per capita and gender difference in primary school 
+       enrollment",
+         x = "GDP per capita",
+         y = "Gender difference in primary enrollment")

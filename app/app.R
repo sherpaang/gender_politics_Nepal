@@ -26,25 +26,39 @@ ui <- fluidPage(
                       tabPanel(
                           "Nepal",
                           br(),
-                          h4("About Nepal"),
                           p("Nepal is a small country in South Asia, located
                           between India and China. It is home to 28 million
-                          people and boasts some of the tallest mountains in
-                          the world."),
+                          people. Located in the heart of Himalayas,
+                          natural beauty, cultural diversity, and lots of
+                          mo:mos are what defines Nepal for many."),
                           br(),
-                          img(src = "literacy.gif", align = "left",
-                              height='250px', width='500px'),
+                          plotOutput("literacygif"),
+                          br(),
+                          br(),
+                          br(),
+                          br(),
+                          p("Nepal shares the Indian sub-continent with its 7
+                            neighbors - all pictured in the plot above.
+                            It shares a rich cultural and diplomatic
+                            relationship with most of its neighbors in South
+                            Asia. However, Nepal lacks significantly behind its
+                            neighbors when it comes to gender empowerment as
+                            illustrated by the difference in literacy rates in
+                            the plot above. Economically as well, Nepal has not
+                            fared well in comparison to other nations in the
+                            region"),
+                          br(),
+                          plotOutput("gdpgif"),
+                          br(),
+                          br(),
+                          br(),
                           br(),
                           p("It is home to a hundred different castes,
-                          ethnicities and languages despite its rather small
-                          population. The capital city is located in the 
-                          Kathmandu valley in the Hilly region of the country,
-                          situated between the Mountaineous region in the north
-                          and the Terai plains in the South."),
-                          br(),
-                          img(src = "gdp.gif", align = "left",
-                              height='250px', width='500px'),
-                          br(),
+                            ethnicities and languages despite its rather small
+                            population. The capital city is located in the 
+                            Kathmandu valley in the Hilly region of the country,
+                            situated between the Mountaineous region in the north
+                            and the Terai plains in the South."),
                           p("Administratively, it is divided into 7 states, 77
                           districts and thousands of local municipalities. It
                           has federal governance, which was very recently
@@ -52,39 +66,28 @@ ui <- fluidPage(
                           election of 2013, when the country did not have a
                           federal governance system and consisted of 75
                           districts overall."),
+                          br(),
+                          h4(strong("Map of Nepal")),
                           leafletOutput("basicmap"),
                           br(),
                           br(),
-                          h4("HDI by geograhpical region"),
-                          sidebarLayout(
-                              sidebarPanel(
-                                  selectInput(
-                                      "select_region",
-                                      "Select Region",
-                                      choices = c("Mountain", "Hill", "Terai")
-                                  )),
-                              mainPanel(plotOutput("hdi"))),
-                          br(),
-                          br(),
-                          h4("Female literacy and population"),
-                          sidebarLayout(
-                              sidebarPanel(
-                                  selectInput(
-                                      "select_dr",
-                                      "Select Development Region",
-                                      choices = c("Eastern", "Central",
-                                                  "Western",
-                                                  "Mid-Western", "Far-Western")
-                                  )),
-                              mainPanel(plotOutput("femlitpop")))
                       ),
                       
                       tabPanel(
                           "Data",
                           br(),
-                          h4("Context"),
-                          br(),
-                          plotOutput("geo"),
+                          h4(strong("Context")),
+                          h5("Female literacy and population"),
+                          sidebarLayout(
+                            sidebarPanel(
+                              selectInput(
+                                "select_dr",
+                                "Select Development Region",
+                                choices = c("Eastern", "Central",
+                                            "Western",
+                                            "Mid-Western", "Far-Western")
+                              )),
+                            mainPanel(plotOutput("femlitpop"))),
                           br(),
                           p("After a centuries long monarchy rule and a brief
                           civil war for around 10 years, Nepal finally
@@ -105,7 +108,14 @@ ui <- fluidPage(
                             representation in a particular location more than
                             simply being enlisted in a party list."),
                           br(),
-                          h4("Important Data Modifications"),
+                          h4(strong("Female Representation in Nepal")),
+                          plotOutput("density"),
+                          br(),
+                          plotOutput("age"),
+                          br(),                          
+                          plotOutput("geo"),
+                          br(),
+                          h4(strong("Important Data Modifications")),
                           p("Most of the modifications have been aptly
                           mentioned in the code chunks of the R files available
                           in the Github repo. However, I will highlight some of
@@ -124,12 +134,6 @@ ui <- fluidPage(
                           had a total of 68 districts with variuos candidates
                           from each."),
                           br(),
-                          h4("Female Representation in Nepal"),
-                          h5("Distribution of Gender across district"),
-                          plotOutput("density"),
-                          br(),
-                          h5("Distribution of Gender across age"),
-                          plotOutput("age"),
                           h4("Source:"),
                           p("The data sets used in this project were largely
                        extracted from three major sources:"),
@@ -175,12 +179,19 @@ ui <- fluidPage(
                                    \\beta_5femaleliteracy2011_i +
                                    \\epsilon_i $$"),
                           p("Here are the intercepts I got for my models:"),
-                          br(),
-                          h4("Model with non-zero coefficient variables"),
                           gt_output(outputId = "nonzerotable"),
                           br(),
                           plotOutput("hdicorr"),
                           br(),
+                          h5("HDI by geograhpical region"),
+                          sidebarLayout(
+                            sidebarPanel(
+                              selectInput(
+                                "select_region",
+                                "Select Region",
+                                choices = c("Mountain", "Hill", "Terai")
+                              )),
+                            mainPanel(plotOutput("hdi"))),
                           h3("Interpretation"),
                           h4("Terminologies:"),
                           tags$ul(
@@ -269,7 +280,24 @@ ui <- fluidPage(
 # server logic
 
 server <- function(input, output){
-    
+  
+  output$literacygif  <- renderImage({
+    filename <- file.path('literacy.gif')
+    list(src = filename,
+         contentType = 'image/gif',
+         alt = 'Animated')
+    },
+    deleteFile = FALSE)
+  
+  output$gdpgif  <- renderImage({
+    filename <- file.path('gdp.gif')
+    list(src = filename,
+         contentType = 'image/gif',
+         alt = 'Animated')
+  },
+  deleteFile = FALSE)
+  
+  
     output$hdi <- renderPlot({
         
         hdigraph %>%
