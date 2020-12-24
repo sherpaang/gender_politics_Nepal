@@ -45,6 +45,8 @@ ui <- fluidPage(
                           federal governance system and consisted of 75
                           districts overall."),
                           leafletOutput("basicmap"),
+                          br(),
+                          br(),
                           h4("HDI by geograhpical region"),
                           sidebarLayout(
                               sidebarPanel(
@@ -285,8 +287,8 @@ server <- function(input, output){
             ggplot(aes(x = geographical_region)) +
             geom_col(aes(y = totalfempop), size = 1, color = "white",
                      fill = "darkblue") +
-            geom_line(aes(y = 20000*avgfemliteracy), size = 1.25, color = "red",
-                      group = 1) +
+            geom_boxplot(aes(y = 20000*avgfemliteracy), size = 1.25,
+                         color = "red") +
             scale_y_continuous(
                 sec.axis = sec_axis(~./20000, name = "Female literacy",
                                     breaks = c(10, 20, 30, 40, 50, 60, 70)),
@@ -294,7 +296,7 @@ server <- function(input, output){
                 breaks = c(0, 250000, 500000, 750000, 1000000,
                            1250000, 1500000, 1750000, 2000000, 2250000)) +
             theme_classic() +
-            labs(title = "Total population and Average female literacy",
+            labs(title = "Total female population and Average female literacy",
                  subtitle = "Female literacy is generally lowest in Terai",
                  x = "Geographical Region",
                  y = "Total female population")
