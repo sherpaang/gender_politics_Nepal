@@ -43,7 +43,7 @@ ui <- fluidPage(
                           and the Terai plains in the South."),
                           br(),
                           img(src = "gdp.gif", align = "left",
-                              height='250px',width='500px'),
+                              height='250px', width='500px'),
                           br(),
                           p("Administratively, it is divided into 7 states, 77
                           districts and thousands of local municipalities. It

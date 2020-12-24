@@ -2,6 +2,7 @@
 
 cand2013 <- read.csv("cand2013")
 aggregate <- read.csv("aggregate")
+enrollmentgdp <- read.csv("enrollmentgdp")
 
 # visualizing gender distribution of candidates across geographical regions
 # Assigning the plot to an object to call it later in the main app.
