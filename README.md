@@ -24,9 +24,7 @@ into the app folder to load it later in the final shiny.
 The model can be accessed in an Rmd file called Model.Rmd. It does not belong
 to a app.R file for the simple reason that putting it into an RDS file makes
 loading the final app much faster and efficient. These RDS files were written
-after the model was prepared and were aptly loaded in the final app. They are
-called model 2.rds and model 3.rds, while the error terms for the models
-considered were put into a csv file called the error.csv
+after the model was prepared and were aptly loaded in the final app.
 
 ## Shinyapp
 
