@@ -33,7 +33,7 @@ cand2013 %>%
 
 # I also renamed the biggest category - the independents - in English.
 
-cand2013 %>%
+party_name <- cand2013 %>%
   filter(!party_name == "Lamjung") %>%
   mutate(party_name = case_when(
     party_name == "स्वतन्त्र" ~ "Independent",
@@ -55,3 +55,57 @@ cand2013 %>%
 # any analysis difficult. Without a way to convert th
 
 ```
+
+
+```{r}
+
+# HDI demonstration by geographical and development regions
+# putting .groups = "drop" to drop the grouping and to remove the error at the
+# end.
+
+hdigraph <- aggregate %>%
+  select(geographical_region, development_region, hdi2011) %>%
+  mutate(geographical_region = as.factor(geographical_region),
+         development_region = as.factor(development_region)) %>%
+  group_by(geographical_region, development_region) %>%
+  summarize(averageHDI = mean(hdi2011), .groups = "drop")
+
+hdigraph$development_region <- factor(hdigraph$development_region,
+                                      levels = c("Far-Western", "Mid-Western",
+                                                 "Western", "Central",
+                                                 "Eastern"))
+
+
+femliteracypop <- aggregate %>%
+  select(development_region, geographical_region,
+         femaleliteracy2011, femalepop2011) %>%
+  mutate(geographical_region = as.factor(geographical_region),
+         development_region = as.factor(development_region)) %>%
+  group_by(development_region, geographical_region) %>%
+  summarize(avgfemliteracy = mean(femaleliteracy2011),
+            totalfempop = sum(femalepop2011),
+            .groups = "drop")
+
+```
+
+
+```{r}
+
+# explaining the correlation between proportion of women candidates in a
+# district and the hdi of that particular district
+
+aggregate %>%
+  ggplot(aes(hdi2011, prop2013)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_x_continuous(breaks = c(0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7)) +
+  theme_clean() +
+  labs(title = "Correlation between HDI and Proportion of female candidates",
+       subtitle = "There seems to be a small correlation",
+       x = "HDI",
+       y = "Proportion of female candidates")
+ 
+
+```
+
+
