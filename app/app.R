@@ -100,7 +100,7 @@ ui <- fluidPage(
                           h4(strong("Map of Nepal")),
                           leafletOutput("basicmap"),
                           br(),
-                          br(),
+                          br()
                       ),
                       
                       tabPanel(
@@ -199,7 +199,7 @@ ui <- fluidPage(
                       ),
                     tabPanel(
                           "Model",
-                          h4(strong("Regression")),
+                          br(),
                           p("I initially divided the data set into training and
                             testing. After fitting the model into the training
                             data set, I checked their predictive power with the
@@ -266,8 +266,8 @@ ui <- fluidPage(
                                       refers to the interval with the
                                       confidence or the probability of the
                                       actual regression coefficient falling
-                                      under these intervals.")
-                          ),
+                                      under these intervals.")),
+                          br(),
                           h4(strong("Interpretation of the Model")),
                           p("It is rather strange that so many
                               variables in the model had near-zero coefficients.
@@ -317,7 +317,7 @@ ui <- fluidPage(
                       ),
                       tabPanel("About",
                                br(),
-                               h4("About Me"),
+                               h4(strong("About Me")),
                                p("Hey there, my name is Ang Sonam Sherpa. I am
                                a sophomore at Harvard concentrating in Social
                                Studies with a secondary in Mathematics. Welcome
@@ -326,7 +326,7 @@ ui <- fluidPage(
                                If you are here, I am presuming you went through
                                my project already. Let me know your thoughts at
                                angsonamsherpa@college.harvard.edu"),
-                               h4("About the project"),
+                               h4(strong("About the project")),
                                p("This project is an attempt at understanding
                                how female representation in Nepal is affected by
                                various district level characteristics ranging
@@ -337,7 +337,7 @@ ui <- fluidPage(
                                various district characteristics. I got to learn
                                a lot about Nepal doing so, and I am really glad
                                in having chosen Nepal for my study"),
-                               h4("Motivations"),
+                               h4(strong("Motivation")),
                                p("I am from Nepal. I feel deeply connected to
                                  everything that happens there. As a
                                  momo-loving Nepali, I used this opportunity
