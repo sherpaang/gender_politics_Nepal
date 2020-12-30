@@ -187,12 +187,12 @@ ui <- fluidPage(
                           the data to English, for which I simply copied the
                           Nepali text displayed in R and used mutate and case
                           when functions when appropriate. Finally, since I 
-                          joined data sets from two different sources, some
+                          joined data sets from different sources, some
                           data points for some districts were missing, so I
                           removed the missing districts after joining them
                           together for better data analysis. My final analysis
-                          had a total of 68 districts with variuos candidates
-                          from each."),
+                          had a total of 68 districts with a total of 5154
+                          candidates for the model."),
                           br(),
                           h4(strong("Source:")),
                           p("The data sets used in this project were largely
@@ -459,7 +459,7 @@ server <- function(input, output){
                            1250000, 1500000, 1750000, 2000000, 2250000)) +
             theme_classic() +
             labs(title = "Total female population and Average female literacy",
-                 subtitle = "Female literacy is generally lowest in Terai",
+                 subtitle = "Bar plots represent population",
                  x = "Geographical Region",
                  y = "Total female population")
         

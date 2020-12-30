@@ -8,7 +8,11 @@ asialiteracy <- read.csv("asialiteracy")
 # visualizing gender distribution of candidates across geographical regions
 # Assigning the plot to an object to call it later in the main app.
 
+# changing the value of gender from numbers to male and female for the plots
+
 geographical_region <- cand2013 %>%
+    mutate(gender = case_when(
+        gender == 1 ~ "Female", TRUE ~ "Male")) %>%
     ggplot(aes(x = gender, fill = gender)) +
     geom_bar() +
     facet_wrap(~ geographical_region) + 
@@ -46,6 +50,8 @@ densitydistribution <- aggregate %>%
 # Age distribution of candidates by Gender and Geographical regions
 
 agedistribution <- cand2013 %>%
+    mutate(gender = case_when(
+        gender == 1 ~ "Female", TRUE ~ "Male")) %>%
     ggplot(aes(age, gender, color = geographical_region)) +
     geom_jitter(alpha = 0.2) +
     
@@ -96,7 +102,6 @@ hdicorr <- aggregate %>%
     scale_x_continuous(breaks = c(0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7)) +
     theme_clean() +
     labs(title = "Correlation between HDI and Proportion of female candidates",
-         subtitle = "There seems to be a strong correlation",
          x = "HDI",
          y = "Proportion of female candidates")
 
