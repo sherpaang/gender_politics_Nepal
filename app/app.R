@@ -81,7 +81,13 @@ ui <- fluidPage(
                             gendered difference in Primary school enrollment.
                             However, after the GDP per capita reaches around 
                             $2000, the effect does not seem to exist for South
-                            Asian countries"),
+                            Asian countries. Ofcourse, the confidence interval
+                            of the relationship is much wider as we approach
+                            the said GDP per capita. However, the general truth
+                            stands out - there is a very little difference in
+                            primary school enrollment generally between men and
+                            women after a country in South Asia reaches a GDP
+                            per capita of $2000."),
                           br(),
                           h4(strong("Inside Nepal")),
                           p("It is home to a hundred different castes,
@@ -97,6 +103,7 @@ ui <- fluidPage(
                           election of 2013, when the country did not have a
                           federal governance system and consisted of 75
                           districts overall."),
+                          br(),
                           h4(strong("Map of Nepal")),
                           leafletOutput("basicmap"),
                           br(),
@@ -112,7 +119,7 @@ ui <- fluidPage(
                             sidebarPanel(
                               selectInput(
                                 "select_dr",
-                                "Select Development Region",
+                                "Development Region",
                                 choices = c("Eastern", "Central",
                                             "Western",
                                             "Mid-Western", "Far-Western")
