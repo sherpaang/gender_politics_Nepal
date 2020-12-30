@@ -286,6 +286,15 @@ cand2013 <- cand2013 %>%
 # unavailable for some candidates. I removed these na values for proper
 # modeling and graphing.
 
+
+# converting gender to 1 (female) and 0 (male) to conduct a numerical regression
+
+cand2013 <- cand2013 %>%
+    mutate(gender = case_when(
+        gender == "female" ~ 1,
+        TRUE ~ 0
+    ))
+
 ```
 
 

@@ -142,8 +142,9 @@ ui <- fluidPage(
                             This analysis is limited to FPTP candidates only.
                             That should not be a problem as candidates actively
                             running for themselves would approximate gender
-                            representation in a particular location more than
-                            simply being enlisted in a party list."),
+                            representation in a particular location as well
+                            despite different dynamics at play when it comes
+                            to such candidacy."),
                           br(),
                           h4(strong("Female Representation in Nepal")),
                           plotOutput("density"),
@@ -162,14 +163,17 @@ ui <- fluidPage(
                             and gender seems to be pretty evenly spread. There
                             is a high concentration in the 30-50 age mark. The
                             number of candidates in Terai is significantly more
-                            in comparison"),
+                            in comparison, which makes sense since Terai is also
+                            more heavily populated than other regions."),
                           br(),
                           plotOutput("geo"),
                           br(),
                           p("Finally, the proportion of female candidates
                             across geographical regions is pretty similar. The
                             number of female candidates from the Mountain region
-                            seems to be negligible - which is problematic."),
+                            seems to be negligible. But the proportion of male
+                            candidates is significantly higher all across the
+                            three regions."),
                           br(),
                           h4(strong("Important Data Modifications")),
                           p("Most of the modifications have been aptly
@@ -210,28 +214,38 @@ ui <- fluidPage(
                           p("I initially divided the data set into training and
                             testing. After fitting the model into the training
                             data set, I checked their predictive power with the
-                            test data set."),
+                            test data set. To do so, I changed the values of
+                            the gender column to 1 if female and 0 if male. I
+                            intended to run an OLS regression on the gender of
+                            each candidate. While I also considered conducting
+                            a logistic regression, seeing no significant 
+                            marginal benefits, I did not."),
                           p("I firstly considered a model with all the
                             explanatory variables I had. The regression
                             coefficients of many variables were 0, so I then
-                            put all the variables with zero coefficients
-                            (defined as the first two decimal points being zero)
-                            and the non-zero coefficients in two different
-                            models. I tested the errors associated with all
-                            three models."),
+                            put all the variables with non-zero coefficients
+                            (defined as the first two decimal points not being
+                            zero) into a model. I tested the errors associated
+                            with two models - one with all the variables and the
+                            other with all the non-zero coefficient
+                            variables."),
                           p("None of the models had any significant
                           error values, so I proceeded with making a model
-                            with all the non-zero coefficient variables."),
+                            with all the non-zero coefficient variables. If you
+                            would be interested in learning more about the error
+                            calculation and its values, please refer to my
+                            Github and an Rmd file called model
+                            in particular."),
+                          br(),
                           h4(strong("Formula")),
                           withMathJax(),
-                          helpText("$$ femaleprop_i = \\beta_1winner2008_i +
+                          helpText("$$ gender_i = \\beta_1winner2008_i +
                                    \\beta_{2}income2001_i + \\beta_3hdi2011_i +
-                                   \\beta_{4}literacy2011_i +
-                                   \\beta_5femaleliteracy2011_i +
+                                   \\beta_{4}developmentregion_i +
                                    \\epsilon_i $$"),
                           br(),
                           p("Here are the intercepts I got for my models:"),
-                          gt_output(outputId = "nonzerotable"),
+                          gt_output(outputId = "modeltable"),
                           br(),
                           p("As we can see, HDI of a district seems to have an
                             outsized influence in the proportion of female
@@ -243,8 +257,8 @@ ui <- fluidPage(
                           br(),
                           p("For a better understanding of how HDI is
                             distributed across Nepal, the following interactive
-                            plot should help. Selecting a geographical region
-                            in the left hand side should demonstrate the
+                            plot should be useful. Selecting a geographical
+                            region in the left hand side should demonstrate the
                             distribution of HDI across development regions in
                             the right."),
                           h5("HDI by geograhpical region"),
@@ -259,8 +273,8 @@ ui <- fluidPage(
                           h4(strong("Terminologies")),
                           tags$ul(
                               tags$li("Our outcome variable (y variable) is
-                              femaleprop, which refers to the proportion of
-                                      female candidates in a district."),
+                              gender, which refers to the gender of an
+                                      individual candidate."),
                               tags$li("The error term, Ei, simply refers to the
                               difference between the actual proportion of
                                       female candidates and the modeled
@@ -282,43 +296,51 @@ ui <- fluidPage(
                               coefficients would suggest that there is no
                               relationship between female candidate proportion
                               and these variables. That is a possibility since
-                              proportion of female candidates might not be a
-                              good proxy for gender empowerment. The fact that
-                              there were only 68 districts ultimately (removing
-                              na values and other data problems) could have also
-                              meant that the data set might not have been big
-                              enough for analysis"),
-                          p("In the model with non-zero coefficient
-                              variables however, the Beta of winner2008, which
-                              is 0.12, refers to the slope of proportion of
+                              the gender of candidates in an election might not
+                              be a good proxy for gender empowerment."),
+                          p("The Beta of winner2008, which
+                              is 0.1, refers to the slope of proportion of
                               female candidates in 2013 with the proportion of
                               women elected officials in the district in 2008.
                               The confidence interval is also relatively narrow
                               for this variable."),
-                          p("The coefficients of income 2001 and
-                              literacy 2011 are negative. This implies a
-                              negative relationship between a higher income of
-                              woman (income 2001) and higher general literacy
-                              and the proportion of female candidates. However,
-                              the coefficient is very small for both. Further, 
-                              the income2001 variable does not seem to pass the
-                              null hypothesis either. Ergo, both of these
-                              variables ought to be read as having zero
-                              correlations at this point."),
-                          p("The highest coefficient among our
-                              variables seems to be for
-                  hdi 2011. The correlation between HDI and female empowerment
-                  is pretty self-explanatory. When people in a community are
-                  more empowered, they are more likely to support female
-                  empowerment. However, we can see that literacy has a
-                  negligible effect in the proportion of female candidates in a
-                  district. Therefore, in a surfacial level, the effect of HDI
-                  in female election representativeness in Nepal seems to be a
-                  result, not of increased literacy (which is a party of HDI),
-                  but rather other variables which might aid a higher HDI.
-                  Note: the income variable we have belongs to 2001, so we
-                  cannot take that as an effective proxy for the income levels
-                  of women in these districts in  2013."),
+                          p("The coefficients of income 2001 is negligible even
+                            though it is not exactly 0. First of all, the
+                            variable does not pass the null hypothesis since
+                            Standard Deviation is broad enough to include zero.
+                            Secondly, 0.02 is a rather small coefficient to
+                            begin with. Finally, it is to be expected since
+                            we are talking about the income data set from
+                            2001."),
+                          p("The highest coefficient among our variables seems
+                          to be for hdi 2011. The correlation between HDI and
+                          female empowerment is pretty self-explanatory. When
+                          people in a community are more empowered, they are
+                          more likely to support female empowerment. However,
+                          if we are to ignore the shortcoming of our income
+                          2001 data set to represent the incomes of women at
+                          2013, we can see that income has a negligible effect
+                          in gender of candidates in a district. Therefore, in
+                          a superficial level, the effect of HDI in female
+                          election representativeness in Nepal seems to be a 
+                          result, not of increased income, but rather other
+                          variables which might aid to a higher HDI."),
+                          p("The coefficients of development regions highlight
+                            a small yet significant difference between different
+                            development regions. They cannot be interpreted
+                            individually. With the addition of a particular
+                            hdi value and the winner proportion of 2008, they
+                            represent the difference that each development
+                            region would bring to the gender of the candidate.
+                            The higher the difference, the higher the
+                            likelihood of a male candidate, since male is
+                            indicated by a value of zero in this regression.
+                            As such, the difference between the Eastern, Central
+                            and Western seems to be negligible. However, the
+                            Far western region seems to have a slightly lower
+                            probability for a male candidate with the Far
+                            Western having much higher probability of a male
+                            candidate."),
                           br(),
                           br()
                       ),
@@ -328,11 +350,11 @@ ui <- fluidPage(
                                p("Hey there, my name is Ang Sonam Sherpa. I am
                                a sophomore at Harvard concentrating in Social
                                Studies with a secondary in Mathematics. Welcome
-                               to my final project for Gov 50, a class in data
-                               science. I took it for the fall semester in 2020.
-                               If you are here, I am presuming you went through
-                               my project already. Let me know your thoughts at
-                               angsonamsherpa@college.harvard.edu"),
+                               to my final project for Gov 50. It is a class in
+                               data science which I took for the fall semester
+                               in 2020. If you are here, I am presuming you went
+                               through my project already. Let me know what you
+                               think at angsonamsherpa@college.harvard.edu"),
                                h4(strong("About the project")),
                                p("This project is an attempt at understanding
                                how female representation in Nepal is affected by
@@ -343,11 +365,11 @@ ui <- fluidPage(
                                of female candidates in each district with
                                various district characteristics. I got to learn
                                a lot about Nepal doing so, and I am really glad
-                               in having chosen Nepal for my study"),
+                               in having chosen Nepal for my study."),
                                h4(strong("Motivation")),
                                p("I am from Nepal. I feel deeply connected to
                                  everything that happens there. As a
-                                 momo-loving Nepali, I used this opportunity
+                                 mo:mo-loving Nepali, I used this opportunity
                                  to learn more about my home country. The major
                                  motivation for choosing Nepal was the
                                  promulugation of the Affirmative Action policy
@@ -360,7 +382,7 @@ ui <- fluidPage(
                                  of Open Data Nepal Project and Nepal in Data - 
                                  two of the foremost organizations at the
                                  forefront of bringing Nepal to the digital age
-                                 that it belongs to"),
+                                 that it belongs to."),
                                p("You can find the link to my Github right", 
                                  a("here.",
                 href="https://github.com/sherpaang/gender_politics_Nepal.git"))
@@ -472,13 +494,12 @@ server <- function(input, output){
     })
     
     
-    output$nonzerotable <- render_gt({
+    output$modeltable <- render_gt({
         
         tbl_regression(model2, intercept = TRUE) %>%
             as_gt() %>%
-            tab_header(title = md("Regression of proportion of Female
-                                  candidates in a district with various
-                                  district characteristics")) %>%
+            tab_header(title = md("Regression of candidate's gender
+                                  with various district characteristics")) %>%
             tab_source_note("Source: Open Project Nepal & Nepal in Data")
         
     })

@@ -96,7 +96,7 @@ hdicorr <- aggregate %>%
     scale_x_continuous(breaks = c(0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7)) +
     theme_clean() +
     labs(title = "Correlation between HDI and Proportion of female candidates",
-         subtitle = "There seems to be a small correlation",
+         subtitle = "There seems to be a strong correlation",
          x = "HDI",
          y = "Proportion of female candidates")
 

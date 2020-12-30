@@ -28,15 +28,6 @@ library(tidymodels)
 
 # model for individual candidates' gender instead of aggregates
 
-# converting gender to 1 (female) and 0 (male) to conduct a numerical regression
-
-cand2013 <- cand2013 %>%
-    mutate(gender = case_when(
-        gender == "female" ~ 1,
-        TRUE ~ 0
-    ))
-
-
 set.seed(10)
 
 cand2013_split <- initial_split(cand2013, prob = 0.8)
@@ -93,17 +84,19 @@ model1 <- stan_glm(gender ~ winner2008 + income2001 + professionaljobs2001 +
                    refresh = 0,
                    data = cand2013)
 
-print(model1, digits = 3)
+print(model1, digits = 2)
 
 # creating the model with non-zero coefficient variables
 
 set.seed(10)
 
-model2 <- stan_glm(gender ~ winner2008 + hdi2011 + development_region - 1,
+model2 <- stan_glm(gender ~ winner2008 + income2001 + hdi2011 +
+                       development_region - 1,
                    refresh = 0,
                    data = cand2013)
 
-print(model2, 3)
+print(model2, 2)
+
 
 ```
 
@@ -135,21 +128,11 @@ recipe2 <- recipe(gender ~ winner2008 + hdi2011 + development_region,
 
 error2 <- estimate_error(recipe2)
 
-# zero coefficient variables
-
-recipe3 <- recipe(gender ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
-                     povline2011 + popdens2011 + literacy2011 + femalepop2011 +
-                     femaleliteracy2011 + geographical_region + age,
-                 data = cand2013_train)
-
-error3 <- estimate_error(recipe3)
-
 # finally putting all the error values in the same tibble
 
 error <- tibble(Metric = c("RMSE", "RSQ", "MAE"),
                 "All Variables" = error1$.estimate,
-                "Non-zero Variables" = error2$.estimate,
-                "Zero variables" = error3$.estimate)
+                "Non-zero Variables" = error2$.estimate)
 
 ```
 
@@ -162,4 +145,3 @@ write.csv(error, "error")
 saveRDS(model2, "model2")
 
 ```
-
