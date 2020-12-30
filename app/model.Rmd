@@ -15,7 +15,28 @@ library(tidymodels)
 
 ```{r}
 
-# creating a function to test different models
+# I am creating a OLS model with the candidate data set. The candidate data set
+# has more data points since it includes value for each individual candidate
+# and their gender.
+
+# Whereas, the aggregate data set only includes the proportion of women in a
+# district, which means it only has 68 data points which can make the reading
+# less reliable.
+
+# creating a function to test different models for the candidate data set and
+# its individual candidates gender
+
+# model for individual candidates' gender instead of aggregates
+
+# converting gender to 1 (female) and 0 (male) to conduct a numerical regression
+
+cand2013 <- cand2013 %>%
+    mutate(gender = case_when(
+        gender == "female" ~ 1,
+        TRUE ~ 0
+    ))
+
+
 set.seed(10)
 
 cand2013_split <- initial_split(cand2013, prob = 0.8)
@@ -43,37 +64,82 @@ estimate_error <- function(test_recipe){
     prediction_results <- cand2013_workflow %>%
         fit(data = cand2013_train) %>%
         predict(new_data = cand2013_test) %>%
-        bind_cols(cand2013_test %>% select(prop2013))
+        bind_cols(cand2013_test %>% select(gender))
     
     # I used the metrics function to calculate the errors. I decided to use rsq and
     # rmse for testing the accuracy of the models, simply because I thought they
     # were sufficient for this purpose.
     
     prediction_results %>%
-        metrics(truth = prop2013, estimate = .pred)
+        metrics(truth = gender, estimate = .pred)
 }
-# Testing various recipes and their error value. I firstly put in every
+
+```
+
+
+
+```{r}
+
+# To figure out the intercepts of each explanatory variable and include the
+# non-zero intercept variables in a new model
+
+set.seed(10)
+
+model1 <- stan_glm(gender ~ winner2008 + income2001 + professionaljobs2001 +
+                       adminjobs2001 + pop2011 + povline2011 + popdens2011 +
+                       hdi2011 + literacy2011 + femalepop2011 +
+                       femaleliteracy2011 + grade_10 + development_region +
+                       geographical_region + age - 1,
+                   refresh = 0,
+                   data = cand2013)
+
+print(model1, digits = 3)
+
+# creating the model with non-zero coefficient variables
+
+set.seed(10)
+
+model2 <- stan_glm(gender ~ winner2008 + hdi2011 + development_region - 1,
+                   refresh = 0,
+                   data = cand2013)
+
+print(model2, 3)
+
+```
+
+
+```{r}
+
+# Testing various recipes and their error value. I firstly put in ever
 # explanatory variable I had. After seeing the intercepts of the variables
-# in stan glm, I then chose two more models: one with all the zero values and
-# the other with all the non-zero values.
+# in stan glm, I then calculated error values for three models - one with no
+# with all the variables, one with zero-coefficient ones and one with non-zero
+# coefficient variables
+
+# all variables
 
 recipe1 <- 
-    recipe(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
-               adminjobs2001 + pop2011 + povline2011 + popdens2011 +
-               hdi2011 + literacy2011 + femalepop2011 + femaleliteracy2011,
+    recipe(gender ~ winner2008 + income2001 + professionaljobs2001 +
+                       adminjobs2001 + pop2011 + povline2011 + popdens2011 +
+                       hdi2011 + literacy2011 + femalepop2011 +
+                       femaleliteracy2011 + grade_10 + development_region +
+                       geographical_region + age,
            data = cand2013_train)
 
 error1 <- estimate_error(recipe1)
 
-recipe2 <- recipe(prop2013 ~ winner2008 + income2001 + hdi2011 + literacy2011
-                  + femaleliteracy2011,
+# non zero coefficient variables
+
+recipe2 <- recipe(gender ~ winner2008 + hdi2011 + development_region,
                  data = cand2013_train)
 
 error2 <- estimate_error(recipe2)
 
-recipe3 <- recipe(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
+# zero coefficient variables
+
+recipe3 <- recipe(gender ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
                      povline2011 + popdens2011 + literacy2011 + femalepop2011 +
-                     femaleliteracy2011,
+                     femaleliteracy2011 + geographical_region + age,
                  data = cand2013_train)
 
 error3 <- estimate_error(recipe3)
@@ -85,195 +151,15 @@ error <- tibble(Metric = c("RMSE", "RSQ", "MAE"),
                 "Non-zero Variables" = error2$.estimate,
                 "Zero variables" = error3$.estimate)
 
-# To demonstrate the model and its intercepts in the shinyapp
-
-set.seed(10)
-
-model1 <- stan_glm(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
-                       adminjobs2001 + pop2011 + povline2011 + popdens2011 +
-                       hdi2011 + literacy2011 + femalepop2011 +
-                       femaleliteracy2011 + grade_8 + grade_10 - 1,
-                   refresh = 0,
-                   data = cand2013)
-
-set.seed(10)
-
-model2 <- stan_glm(prop2013 ~ winner2008 + income2001 + hdi2011 +
-                       literacy2011 + femaleliteracy2011 - 1,
-                   refresh = 0,
-                   data = cand2013)
-
-set.seed(10)
-
-model3 <- stan_glm(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
-                       povline2011 + popdens2011 + femalepop2011 + grade_8 + 
-                     grade_10 - 1,
-                   refresh = 0,
-                   data = cand2013)
-
 ```
 
 
 ```{r}
 
-# saving the models in a separate file to save time while loading
+# saving the model and error in a separate file to save time while loading
 
 write.csv(error, "error")
 saveRDS(model2, "model2")
-saveRDS(model3, "model3")
-
-```
-
-
-```{r}
-# testing out the aggregate data sets
-
-# creating a function to test different models
-set.seed(10)
-
-aggregate_split <- initial_split(aggregate, prob = 0.8)
-aggregate_train <- training(aggregate_split)
-aggregate_test <- testing(aggregate_split)
-
-estimate_error_aggregate <- function(test_recipe){
-    
-    # creating the model with linear regression  
-    
-    aggregate_model <-
-        linear_reg() %>%
-        set_engine("lm")
-    
-    # creating work flow by adding model and recipe
-    
-    aggregate_workflow <- workflow() %>%
-        add_model(aggregate_model) %>%
-        add_recipe(test_recipe)
-    
-    # I used the train set to fit the model and the test set to predict, after
-    # which I used bind_cols to add in the actual data and the predicted data
-    # into a single tibble.
-    
-    prediction_results <- aggregate_workflow %>%
-        fit(data = aggregate_train) %>%
-        predict(new_data = aggregate_test) %>%
-        bind_cols(aggregate_test %>% select(prop2013))
-    
-    # I used the metrics function to calculate the errors. I decided to use rsq and
-    # rmse for testing the accuracy of the models, simply because I thought they
-    # were sufficient for this purpose.
-    
-    prediction_results %>%
-        metrics(truth = prop2013, estimate = .pred)
-}
-# Testing various recipes and their error value. I firstly put in every
-# explanatory variable I had. After seeing the intercepts of the variables
-# in stan glm, I then chose two more models: one with all the zero values and
-# the other with all the non-zero values.
-
-recipe1a <- 
-    recipe(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
-               adminjobs2001 + pop2011 + povline2011 + popdens2011 +
-               hdi2011 + literacy2011 + femalepop2011 + femaleliteracy2011,
-           data = aggregate_train)
-
-error1a <- estimate_error_aggregate(recipe1a)
-
-recipe2a <- recipe(prop2013 ~ winner2008 + income2001 + hdi2011 + literacy2011
-                  + femaleliteracy2011,
-                 data = aggregate_train)
-
-error2a <- estimate_error_aggregate(recipe2a)
-
-recipe3a <- recipe(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
-                     povline2011 + popdens2011 + literacy2011 + femalepop2011 +
-                     femaleliteracy2011,
-                 data = aggregate_train)
-
-error3a <- estimate_error_aggregate(recipe3a)
-
-# finally putting all the error values in the same tibble
-
-errora <- tibble(Metric = c("RMSE", "RSQ", "MAE"),
-                "All Variables" = error1a$.estimate,
-                "Non-zero Variables" = error2a$.estimate,
-                "Zero variables" = error3a$.estimate)
-```
-
-
-```{r}
-# To demonstrate the model and its intercepts in the shinyapp
-
-set.seed(10)
-
-model1a <- stan_glm(prop2013 ~ winner2008 + income2001 + professionaljobs2001 +
-                       adminjobs2001 + pop2011 + povline2011 + popdens2011 +
-                       hdi2011 + literacy2011 + femalepop2011 +
-                       femaleliteracy2011 + grade_8 + grade_10 - 1,
-                   refresh = 0,
-                   data = aggregate)
-
-print(model1a, digits = 3)
-
-set.seed(10)
-
-model2a <- stan_glm(prop2013 ~ winner2008 + income2001 + hdi2011 +
-                       literacy2011 + femaleliteracy2011 - 1,
-                   refresh = 0,
-                   data = aggregate)
-
-print(model2a, digits = 3)
-
-set.seed(10)
-
-model3a <- stan_glm(prop2013 ~ professionaljobs2001 + adminjobs2001 + pop2011 + 
-                       povline2011 + popdens2011 + femalepop2011 + grade_8 + 
-                     grade_10 - 1,
-                   refresh = 0,
-                   data = aggregate)
-
-print(model3a, digits = 3)
-
-```
-
-
-
-```{r}
-
-# model for individual candidates' gender instead of aggregates
-
-# converting them to 1 and 0 to conduct a numerical regression
-
-cand2013model <- cand2013 %>%
-    mutate(gender = case_when(
-        gender == "female" ~ 1,
-        TRUE ~ 0
-    ))
-
-set.seed(10)
-
-modelb <- stan_glm(gender ~ winner2008 + income2001 + hdi2011 +
-                       literacy2011 + femaleliteracy2011 + age - 1,
-                   refresh = 0,
-                   data = cand2013model)
-
-print(modelb, digits = 3)
-
-```
-
-
-```{r}
-
-library(splines)
-library(MASS)
-
-ggplot(data = data.frame(pred = pred,loopred = ploo,
-                         y = as.numeric(y)-1), aes(x=loopred, y=y)) +
-  stat_smooth(method='gam', formula = y ~ s(x, k=20), method.args = list(family = "binomial")) +
-  geom_abline(linetype = 'dashed') +
-  labs(x = "Predicted (LOO)", y = "Observed") +
-  geom_jitter(aes(x=loopred, y=y*0.96+0.02), height=0.02, width=0, alpha=0.3) +
-  scale_y_continuous(breaks=seq(0,1,by=0.1), limits=c(0,1)) +
-  xlim(c(0,1))
 
 ```
 
