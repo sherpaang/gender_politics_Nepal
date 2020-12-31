@@ -70,11 +70,13 @@ agedistribution <- cand2013 %>%
 # end.
 
 hdigraph <- aggregate %>%
-    select(geographical_region, development_region, hdi2011) %>%
+    select(geographical_region, development_region, hdi2011, prop2013) %>%
     mutate(geographical_region = as.factor(geographical_region),
            development_region = as.factor(development_region)) %>%
     group_by(geographical_region, development_region) %>%
-    summarize(averageHDI = mean(hdi2011), .groups = "drop")
+    summarize(averageHDI = mean(hdi2011),
+              averageprop2013 = mean(prop2013),
+              .groups = "drop")
 
 hdigraph$development_region <- factor(hdigraph$development_region,
                                       levels = c("Far-Western", "Mid-Western",
