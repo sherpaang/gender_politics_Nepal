@@ -5,8 +5,8 @@ account: angsonam
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3402086
-bundleId: 4041635
+bundleId: 4092618
 url: https://angsonam.shinyapps.io/gender_politics_Nepal/
-when: 1609321586.65008
+when: 1610574192.67883
 asMultiple: FALSE
 asStatic: FALSE

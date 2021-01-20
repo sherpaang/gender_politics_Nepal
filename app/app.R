@@ -52,8 +52,8 @@ ui <- fluidPage(
                           br(),
                           br(),
                           h4(strong("More on South Asia")),
-                          p("As we have seen in the graphs above, South Asia
-                            generally has not done very well for female
+                          p("As we have seen in the literacy graph above, South
+                          Asia generally has not done very well for female
                             empowerment. One of the best indicators of gender
                             empowerment in a society is the difference in
                             primary school enrollment between boys and girls.
@@ -70,18 +70,18 @@ ui <- fluidPage(
                           plotOutput("educationcorr"),
                           br(),
                           p("The relationship is clear. More spending in
-                            Education clearly leads to a lower gender
-                            difference in Primary school enrollment. The effect
-                            wanes down after the GDP spending on education
-                            reaches 4% however."),
+                            Education is clearly correlated with a lower gender
+                            difference in Primary school enrollment. However,
+                            the relationship wanes down after the GDP spending
+                            on education reaches 4%"),
                           plotOutput("gdpcorrelation"),
                           br(),
                           p("There seems to be a very strong correlation
                             between a higher GDP per capita and a lower
                             gendered difference in Primary school enrollment.
                             However, after the GDP per capita reaches around 
-                            $2000, the effect does not seem to exist for South
-                            Asian countries. Ofcourse, the confidence interval
+                            $2000, the relationship does not seem to exist.
+                            Ofcourse, the confidence interval
                             of the relationship is much wider as we approach
                             the said GDP per capita. However, the general truth
                             stands out - there is a very little difference in
@@ -211,7 +211,12 @@ ui <- fluidPage(
                     tabPanel(
                           "Model",
                           br(),
-                          p("I initially divided the data set into training and
+                          p("I had a final data set of 5154 individual
+                          candidates all of whom ran for FPTP election seats in
+                          the 2013 constituent assembly election in Nepal. After
+                          finishing all the necessary wrangling which are
+                          accessible in my github, I initially divided the data
+                          set into training and
                             testing. After fitting the model into the training
                             data set, I checked their predictive power with the
                             test data set. To do so, I changed the values of
